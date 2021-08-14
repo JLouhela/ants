@@ -1,5 +1,9 @@
 mod utils;
 
+// TODO remove if not needed later on
+use noise::{NoiseFn, OpenSimplex};
+use web_sys::console;
+
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -24,7 +28,16 @@ impl Terrain {
     pub fn new(width: u32, height: u32) -> Terrain {
         let cell_size: u8 = 16;
         let total_corners = (width + 1) as u32 * (height + 1) as u32;
-        let corners = vec![255 as u8; total_corners as usize];
+
+        let noise = OpenSimplex::new();
+
+        let mut corners = Vec::with_capacity(total_corners as usize);
+        for i in 0..total_corners {
+            let x = i % width;
+            let y = i / width;
+            let val = noise.get([x as f64, y as f64]);
+            corners.push(if val < 0.0 { 0 } else { 255 });
+        }
 
         Terrain {
             width,
@@ -72,6 +85,7 @@ impl World {
         let width = 60;
         let height = 30;
         let terrain = Terrain::new(width, height);
+        console::log_1(&format!("Init new world").into());
         World { terrain }
     }
 

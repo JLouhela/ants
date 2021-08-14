@@ -46,7 +46,7 @@ const getCellType = (cell) => {
       return 2;
     case 0xffff:
       return 3;
-    case 0xff000:
+    case 0xff0000:
       return 4;
     case 0xffff00:
       return 5;
@@ -71,7 +71,7 @@ const getCellType = (cell) => {
     case 0xffffffff:
       return 15;
     default:
-      console.error("Unhandled corner value " + corners);
+      console.error("Unhandled corner value " + cell);
   }
   return 0;
 };
