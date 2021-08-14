@@ -1,18 +1,18 @@
-import { Universe, Cell } from "ants";
+import { World, Cell } from "ants";
 import { memory } from "ants/ants_bg";
 
-const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
-const universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+const world = World.new();
+const width = world.width();
+const height = world.height();
+const cell_size = world.cell_size();
 
 const canvas = document.getElementById("ants-canvas");
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+canvas.height = (cell_size + 1) * height + 1;
+canvas.width = (cell_size + 1) * width + 1;
 
 const ctx = canvas.getContext("2d");
 
@@ -21,52 +21,81 @@ const drawGrid = () => {
   ctx.strokeStyle = GRID_COLOR;
 
   // Vertical lines.
-  for (let i = 0; i <= width; ++i) {
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+  for (let x = 0; x <= width; ++x) {
+    ctx.moveTo(x * cell_size, 0);
+    ctx.lineTo(x * cell_size, cell_size * height);
   }
 
   // Horizontal lines.
-  for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0, j * (CELL_SIZE + 1) + 1);
-    ctx.lineTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
+  for (let y = 0; y <= height; y++) {
+    ctx.moveTo(0, y * cell_size);
+    ctx.lineTo(cell_size * width, y * cell_size);
   }
 
   ctx.stroke();
 };
 
-const getIndex = (row, column) => {
-  return row * width + column;
+const getCellType = (cell) => {
+  // Match wiki table
+  switch (cell) {
+    case 0:
+      return 0;
+    case 0xff00:
+      return 1;
+    case 0xff:
+      return 2;
+    case 0xffff:
+      return 3;
+    case 0xff000:
+      return 4;
+    case 0xffff00:
+      return 5;
+    case 0xff00ff:
+      return 6;
+    case 0xffffff:
+      return 7;
+    case 0xff000000:
+      return 8;
+    case 0xff00ff00:
+      return 9;
+    case 0xff0000ff:
+      return 10;
+    case 0xff00ffff:
+      return 11;
+    case 0xffff0000:
+      return 12;
+    case 0xffffff00:
+      return 13;
+    case 0xffff00ff:
+      return 14;
+    case 0xffffffff:
+      return 15;
+    default:
+      console.error("Unhandled corner value " + corners);
+  }
+  return 0;
 };
 
-const drawCells = () => {
-  const cellsPtr = universe.cells();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
-
-  ctx.beginPath();
-
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
-
-      ctx.fillStyle = cells[idx] === Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
-
-      ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
+const drawTerrain = () => {
+  for (let x = 0; x < width; ++x) {
+    for (let y = 0; y < height; ++y) {
+      const cell = world.cell(x, y);
+      const cellType = getCellType(cell);
+      ctx.font = "10px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        cellType,
+        x * cell_size + cell_size / 2,
+        y * cell_size + cell_size / 2 + 4
       );
     }
   }
-
-  ctx.stroke();
 };
 
 const renderLoop = () => {
-  universe.tick();
+  world.tick();
   drawGrid();
-  drawCells();
+  drawTerrain();
   requestAnimationFrame(renderLoop);
 };
 
