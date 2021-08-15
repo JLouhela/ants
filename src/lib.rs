@@ -1,7 +1,8 @@
 mod utils;
 
 // TODO remove if not needed later on
-use noise::{NoiseFn, OpenSimplex};
+use noise::{NoiseFn, OpenSimplex, Seedable};
+use rand::Rng;
 use web_sys::console;
 
 use wasm_bindgen::prelude::*;
@@ -29,13 +30,16 @@ impl Terrain {
         let cell_size: u8 = 16;
         let total_corners = (width + 1) as u32 * (height + 1) as u32;
 
-        let noise = OpenSimplex::new();
+        let mut rng = rand::thread_rng();
+        let seed = rng.gen_range(0..u32::MAX);
+
+        let noise = OpenSimplex::new().set_seed(seed);
 
         let mut corners = Vec::with_capacity(total_corners as usize);
         for i in 0..total_corners {
             let x = i % width;
             let y = i / width;
-            let val = noise.get([x as f64, y as f64]);
+            let val = noise.get([x as f64, y as f64, 1.0]);
             corners.push(if val < 0.0 { 0 } else { 255 });
         }
 

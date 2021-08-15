@@ -1,5 +1,6 @@
 import { World, Cell } from "ants";
 import { memory } from "ants/ants_bg";
+import * as Renderer from "./modules/renderer";
 
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
@@ -8,11 +9,12 @@ const ALIVE_COLOR = "#000000";
 const world = World.new();
 const width = world.width();
 const height = world.height();
-const cell_size = world.cell_size();
+const cellSize = world.cell_size();
 
 const canvas = document.getElementById("ants-canvas");
-canvas.height = (cell_size + 1) * height + 1;
-canvas.width = (cell_size + 1) * width + 1;
+Renderer.init(canvas);
+canvas.height = (cellSize + 1) * height + 1;
+canvas.width = (cellSize + 1) * width + 1;
 
 const ctx = canvas.getContext("2d");
 
@@ -22,14 +24,14 @@ const drawGrid = () => {
 
   // Vertical lines.
   for (let x = 0; x <= width; ++x) {
-    ctx.moveTo(x * cell_size, 0);
-    ctx.lineTo(x * cell_size, cell_size * height);
+    ctx.moveTo(x * cellSize, 0);
+    ctx.lineTo(x * cellSize, cellSize * height);
   }
 
   // Horizontal lines.
   for (let y = 0; y <= height; y++) {
-    ctx.moveTo(0, y * cell_size);
-    ctx.lineTo(cell_size * width, y * cell_size);
+    ctx.moveTo(0, y * cellSize);
+    ctx.lineTo(cellSize * width, y * cellSize);
   }
 
   ctx.stroke();
@@ -76,26 +78,21 @@ const getCellType = (cell) => {
   return 0;
 };
 
-const drawTerrain = () => {
+const prepareTerrain = () => {
   for (let x = 0; x < width; ++x) {
     for (let y = 0; y < height; ++y) {
       const cell = world.cell(x, y);
       const cellType = getCellType(cell);
-      ctx.font = "10px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        cellType,
-        x * cell_size + cell_size / 2,
-        y * cell_size + cell_size / 2 + 4
-      );
+      Renderer.prepareTerrain(x, y, cellType, cellSize);
     }
   }
 };
 
 const renderLoop = () => {
   world.tick();
+  prepareTerrain();
+  Renderer.draw();
   drawGrid();
-  drawTerrain();
   requestAnimationFrame(renderLoop);
 };
 
