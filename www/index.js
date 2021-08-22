@@ -5,6 +5,7 @@ import * as Renderer from "./modules/renderer";
 const GRID_COLOR = "#CCCCCC";
 const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
+const TARGET_FPS = 60;
 
 const world = World.new();
 const width = world.width();
@@ -88,11 +89,22 @@ const prepareTerrain = () => {
   }
 };
 
+let then = performance.now();
+let now = then;
+let elapsed = 0;
+const fpsInterval = 1000 / TARGET_FPS;
+
 const renderLoop = () => {
-  world.tick();
-  prepareTerrain();
-  Renderer.draw();
-  drawGrid();
+  now = performance.now();
+  elapsed = now - then;
+
+  if (elapsed > fpsInterval) {
+    world.tick();
+    prepareTerrain();
+    Renderer.draw();
+    drawGrid();
+    then = now - (elapsed % fpsInterval);
+  }
   requestAnimationFrame(renderLoop);
 };
 

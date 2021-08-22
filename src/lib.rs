@@ -40,7 +40,7 @@ impl Terrain {
             let x = i % width;
             let y = i / width;
             let val = noise.get([x as f64, y as f64, 1.0]);
-            corners.push(if val < 0.0 { 0 } else { 255 });
+            corners.push(if val <= -0.0 { 0 } else { 255 });
         }
 
         Terrain {
